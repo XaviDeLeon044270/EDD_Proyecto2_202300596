@@ -1,14 +1,18 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
+from Cliente.ArbolAVL import ArbolAVL
+from Cliente.Cliente import Cliente
+from Cliente.NodoAVL import NodoAVL
 # import os
 
 class Interfaz:
+
     def __init__(self):
+        self.arbolAVL = ArbolAVL()
         self.root = tk.Tk()
         self.root.title("Llega Rapidito - Sistema de Gestión")
         self.root.geometry("900x700")
         
-        # Configuración de estilos personalizados
         self.style = ttk.Style()
         self.style.configure(
             "Title.TLabel",
@@ -29,10 +33,8 @@ class Interfaz:
             padding=10
         )
         
-        # Color de fondo principal
         self.root.configure(bg="#e8eaf6")
         
-        # Frame superior con degradado
         self.header_frame = tk.Frame(
             self.root,
             bg="#1a237e",
@@ -40,7 +42,6 @@ class Interfaz:
         )
         self.header_frame.pack(fill="x")
         
-        # Título con efecto de sombra
         self.title_frame = tk.Frame(
             self.header_frame,
             bg="#1a237e"
@@ -65,18 +66,15 @@ class Interfaz:
         )
         self.title_label.place(in_=self.shadow_label, x=-2, y=-2)
         
-        # Frame principal para botones con efecto de elevación
         self.main_frame = tk.Frame(
             self.root,
             bg="#e8eaf6"
         )
         self.main_frame.pack(expand=True, fill="both", padx=50, pady=30)
         
-        # Configuración de la cuadrícula
         self.main_frame.columnconfigure(0, weight=1)
         self.main_frame.columnconfigure(1, weight=1)
         
-        # Iconos para los botones (usando emojis como placeholder)
         self.icons = {
             "Clientes": "👥",
             "Vehículos": "🚗",
@@ -84,7 +82,6 @@ class Interfaz:
             "Rutas": "🗺️"
         }
         
-        # Botones principales con efectos visuales
         self.buttons = {
             "Clientes": {"row": 0, "column": 0, "color": "#303f9f"},
             "Vehículos": {"row": 0, "column": 1, "color": "#1976d2"},
@@ -107,11 +104,9 @@ class Interfaz:
                 sticky="nsew"
             )
             
-            # Efecto de elevación
             frame.bind('<Enter>', lambda e, f=frame: self.on_enter(f))
             frame.bind('<Leave>', lambda e, f=frame: self.on_leave(f))
             
-            # Icono y texto
             icon_label = tk.Label(
                 frame,
                 text=self.icons[texto],
@@ -140,13 +135,13 @@ class Interfaz:
     def on_leave(self, frame):
         frame.configure(relief="raised", bd=1)
     
+    #submenus
     def mostrar_submenu(self, categoria):
         submenu = tk.Toplevel(self.root)
         submenu.title(f"Gestión de {categoria}")
         submenu.geometry("450x600")
         submenu.configure(bg="#e8eaf6")
         
-        # Título del submenú
         tk.Label(
             submenu,
             text=f"{self.icons[categoria]} {categoria}",
@@ -156,7 +151,6 @@ class Interfaz:
             pady=15
         ).pack(fill="x")
         
-        # Frame para opciones
         options_frame = tk.Frame(submenu, bg="#e8eaf6")
         options_frame.pack(expand=True, fill="both", padx=30, pady=30)
         
@@ -167,6 +161,9 @@ class Interfaz:
             ("Mostrar Información (Ingresando llave)", "📋"),
             ("Mostrar Estructura de Datos", "📊")
         ]
+
+        if categoria != "Rutas":
+            opciones.append(("Carga masiva", "📤"))
         
         for texto, icono in opciones:
             btn_frame = tk.Frame(
@@ -199,22 +196,149 @@ class Interfaz:
             icon_label.bind('<Button-1>', lambda e, t=texto: self.ejecutar_accion(categoria, t))
             text_label.bind('<Button-1>', lambda e, t=texto: self.ejecutar_accion(categoria, t))
     
+# FUNCIONES ESENCIALES
+
     def ejecutar_accion(self, categoria, accion):
         if "llave" in accion.lower():
             self.solicitar_llave(categoria, accion)
+        elif "agregar" in accion.lower():
+            if categoria == "Clientes":
+                self.agregar_cliente()
         else:
             messagebox.showinfo(
                 "Información",
                 f"Función {accion} de {categoria} (en desarrollo)"
             )
-    
+
+    def agregar_cliente(self):
+        ventana_cliente = tk.Toplevel(self.root)
+        ventana_cliente.title("Agregar Cliente")
+        ventana_cliente.geometry("500x500")
+        ventana_cliente.configure(bg="#e8eaf6")
+        
+        tk.Label(
+            ventana_cliente,
+            text="Agregar Cliente",
+            font=("Helvetica", 16, "bold"),
+            bg="#1a237e",
+            fg="white",
+            pady=10
+        ).pack(fill="x")
+        
+        frame = tk.Frame(ventana_cliente, bg="#e8eaf6")
+        frame.pack(expand=True, fill="both", padx=30, pady=20)
+        
+        tk.Label(
+            frame,
+            text="Ingrese los datos del cliente:",
+            font=("Helvetica", 12),
+            bg="#e8eaf6"
+        ).pack(pady=10)
+        
+        def crear_campo(parent, label_text, tipo="texto"):
+            container = tk.Frame(parent, bg="#e8eaf6")
+            container.pack(fill="x", pady=5)
+            
+            label = tk.Label(
+                container,
+                text=label_text,
+                font=("Helvetica", 12),
+                bg="#e8eaf6",
+                width=10,
+                anchor="e"
+            )
+            label.pack(side="left", padx=5)
+            
+            if tipo == "texto":
+                entry = tk.Entry(container, font=("Helvetica", 12), relief="solid", bd=1, width=30)
+            elif tipo == "numerico":
+                entry = tk.Entry(container, font=("Helvetica", 12), relief="solid", bd=1, width=30)
+                entry.config(validate="key", validatecommand=(parent.register(lambda val: val.isdigit()), '%P'))
+            elif tipo == "telefono":
+                entry = tk.Entry(container, font=("Helvetica", 12), relief="solid", bd=1, width=30)
+                entry.config(validate="key", validatecommand=(parent.register(lambda val: val.isdigit() and len(val) <= 8), '%P'))
+            elif tipo == "opciones":
+                opciones = ["Masculino", "Femenino", "Otro"]
+                entry = tk.StringVar(container)
+                entry.set(opciones[0])
+                tk.OptionMenu(container, entry, *opciones).pack(side="left", padx=5)
+                return entry
+            
+            entry.pack(side="left", padx=5)
+            return entry
+        
+        # Crear campos de entrada
+        dpi_entry = crear_campo(frame, "DPI:", "numerico")
+        nombres_entry = crear_campo(frame, "Nombres:")
+        apellidos_entry = crear_campo(frame, "Apellidos:")
+        genero_entry = crear_campo(frame, "Género:", "opciones")
+        telefono_entry = crear_campo(frame, "Teléfono:", "telefono")
+        direccion_entry = crear_campo(frame, "Dirección:")
+        
+        # Función para procesar el formulario
+        def enviar_formulario():
+            self.procesar_cliente(
+                dpi_entry.get(),
+                nombres_entry.get(),
+                apellidos_entry.get(),
+                genero_entry.get(),
+                telefono_entry.get(),
+                direccion_entry.get(),
+                ventana_cliente
+            )
+        
+        # Botón de envío
+        btn_container = tk.Frame(frame, bg="#e8eaf6")
+        btn_container.pack(pady=20)
+        
+        btn_frame = tk.Frame(
+            btn_container,
+            bg="#303f9f",
+            relief="raised",
+            bd=1,
+            cursor="hand2"
+        )
+        btn_frame.pack()
+        
+        btn_label = tk.Label(
+            btn_frame,
+            text="Agregar Cliente",
+            font=("Helvetica", 12),
+            bg="#303f9f",
+            fg="white",
+            padx=20,
+            pady=8,
+            cursor="hand2"
+        )
+        btn_label.pack()
+        
+        # Vinculación de eventos del botón
+        btn_frame.bind('<Button-1>', lambda e: enviar_formulario())
+        btn_label.bind('<Button-1>', lambda e: enviar_formulario())
+        btn_frame.bind('<Enter>', lambda e: self.on_enter(btn_frame))
+        btn_frame.bind('<Leave>', lambda e: self.on_leave(btn_frame))
+
+
+
+    def procesar_cliente(self, dpi, nombres, apellidos, genero, telefono, direccion, ventana):
+        if dpi.strip() and nombres.strip() and apellidos.strip() and genero.strip() and telefono.strip() and direccion.strip():
+            nuevo_cliente = Cliente(dpi, nombres, apellidos, genero, telefono, direccion)
+            nuevo_nodo = NodoAVL(nuevo_cliente)
+            self.arbolAVL.insertarNodo(self.arbolAVL.raiz, nuevo_nodo)
+            messagebox.showinfo(
+                "Información",
+                f"Cliente agregado:\nDPI: {dpi}\nNombres: {nombres}\nApellidos: {apellidos}\nGénero: {genero}\nTeléfono: {telefono}\nDirección: {direccion}"
+            )
+            ventana.destroy()
+        else:
+            messagebox.showerror("Error", "Por favor complete todos los campos")
+
     def solicitar_llave(self, categoria, accion):
         ventana_llave = tk.Toplevel(self.root)
         ventana_llave.title("Ingresar Llave")
         ventana_llave.geometry("400x250")
         ventana_llave.configure(bg="#e8eaf6")
         
-        # Título
         tk.Label(
             ventana_llave,
             text="Ingresar Llave",
@@ -224,11 +348,9 @@ class Interfaz:
             pady=10
         ).pack(fill="x")
         
-        # Frame para entrada
         frame = tk.Frame(ventana_llave, bg="#e8eaf6")
         frame.pack(expand=True, fill="both", padx=30, pady=20)
         
-        # Etiqueta
         tk.Label(
             frame,
             text=f"Ingrese la llave del registro de {categoria}:",
@@ -236,7 +358,6 @@ class Interfaz:
             bg="#e8eaf6"
         ).pack(pady=10)
         
-        # Campo de entrada con estilo
         entrada = tk.Entry(
             frame,
             font=("Helvetica", 12),
@@ -245,7 +366,6 @@ class Interfaz:
         )
         entrada.pack(pady=15, ipady=5, ipadx=5)
         
-        # Botón de confirmación
         btn_frame = tk.Frame(
             frame,
             bg="#303f9f",
@@ -284,5 +404,5 @@ class Interfaz:
         self.root.mainloop()
 
 if __name__ == "__main__":
-    app = TransporteGUI()
+    app = Interfaz()
     app.iniciar()

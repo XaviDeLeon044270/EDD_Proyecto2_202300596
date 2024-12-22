@@ -1,0 +1,3 @@
+221374732231, José Carlos, López Morales, Masculino, 54789832, 19 Av.17-01 Z.6 Ciudad de Guatemala;
+321456789012, María Fernanda, Pérez Gómez, Femenino, 55678901, 5 Calle 10-15 Z.1 Ciudad de Guatemala;
+123456789012, Juan Antonio, Rodríguez Díaz, Masculino, 56789012, 12 Av. 4-56 Z.10 Ciudad de Guatemala;

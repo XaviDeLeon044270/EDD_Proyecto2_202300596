@@ -1,9 +1,9 @@
 import tkinter as tk
-from tkinter import ttk, messagebox
-from Cliente.ArbolAVL import ArbolAVL
-from Cliente.Cliente import Cliente
-from Cliente.NodoAVL import NodoAVL
-# import os
+from tkinter import ttk, messagebox, filedialog
+from Cliente import Cliente, NodoAVL, ArbolAVL
+from Vehiculo import Vehiculo
+from Ruta import Ruta
+import os
 
 class Interfaz:
 
@@ -156,13 +156,13 @@ class Interfaz:
         
         opciones = [
             ("Agregar", "➕"),
-            ("Modificar (Ingresando llave)", "✏️"),
-            ("Eliminar (Ingresando llave)", "🗑️"),
-            ("Mostrar Información (Ingresando llave)", "📋"),
+            ("Modificar", "✏️"),
+            ("Eliminar", "🗑️"),
+            ("Mostrar Información", "📋"),
             ("Mostrar Estructura de Datos", "📊")
         ]
 
-        if categoria != "Rutas":
+        if categoria != "Viajes":
             opciones.append(("Carga masiva", "📤"))
         
         for texto, icono in opciones:
@@ -199,11 +199,14 @@ class Interfaz:
 # FUNCIONES ESENCIALES
 
     def ejecutar_accion(self, categoria, accion):
-        if "llave" in accion.lower():
+        if accion == "Modificar" or accion == "Eliminar" or accion == "Mostrar Información":
             self.solicitar_llave(categoria, accion)
         elif "agregar" in accion.lower():
             if categoria == "Clientes":
                 self.agregar_cliente()
+
+        elif accion == "Carga masiva":
+            self.carga_masiva_clientes(categoria)
         else:
             messagebox.showinfo(
                 "Información",
@@ -267,7 +270,6 @@ class Interfaz:
             entry.pack(side="left", padx=5)
             return entry
         
-        # Crear campos de entrada
         dpi_entry = crear_campo(frame, "DPI:", "numerico")
         nombres_entry = crear_campo(frame, "Nombres:")
         apellidos_entry = crear_campo(frame, "Apellidos:")
@@ -275,7 +277,6 @@ class Interfaz:
         telefono_entry = crear_campo(frame, "Teléfono:", "telefono")
         direccion_entry = crear_campo(frame, "Dirección:")
         
-        # Función para procesar el formulario
         def enviar_formulario():
             self.procesar_cliente(
                 dpi_entry.get(),
@@ -287,7 +288,6 @@ class Interfaz:
                 ventana_cliente
             )
         
-        # Botón de envío
         btn_container = tk.Frame(frame, bg="#e8eaf6")
         btn_container.pack(pady=20)
         
@@ -312,7 +312,6 @@ class Interfaz:
         )
         btn_label.pack()
         
-        # Vinculación de eventos del botón
         btn_frame.bind('<Button-1>', lambda e: enviar_formulario())
         btn_label.bind('<Button-1>', lambda e: enviar_formulario())
         btn_frame.bind('<Enter>', lambda e: self.on_enter(btn_frame))
@@ -399,6 +398,82 @@ class Interfaz:
             ventana.destroy()
         else:
             messagebox.showerror("Error", "Por favor ingrese una llave válida")
+
+    def carga_masiva_clientes(self, categoria):
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        archivos_dir = os.path.join(current_dir, 'Archivos')
+        
+        file_path = filedialog.askopenfilename(
+            title="Seleccionar archivo de clientes",
+            initialdir=archivos_dir,
+            filetypes=(("Text files", "*.txt"), ("All files", "*.*"))
+        )
+        
+        if not file_path:
+            messagebox.showwarning("Advertencia", "No se seleccionó ningún archivo")
+            return
+        
+        try:
+            with open(file_path, 'r', encoding='utf-8') as file:
+                for line in file:
+                    if categoria == "Clientes":
+
+                        if not line.strip().endswith(';'):
+                            messagebox.showerror("Error", f"Formato incorrecto en la línea: {line.strip()}")
+                            continue
+
+                        datos = line.strip()[:-1].split(',')
+
+                        if len(datos) != 6:
+                            messagebox.showerror("Error", f"Formato incorrecto en la línea: {line.strip()}")
+                            continue
+
+                        dpi, nombres, apellidos, genero, telefono, direccion = datos
+                        nuevo_cliente = Cliente(dpi.strip(), nombres.strip(), apellidos.strip(), genero.strip(), telefono.strip(), direccion.strip())
+                        print (f"Cliente: {nuevo_cliente.__str__()} agregado")
+                        # nuevo_nodo = NodoAVL(nuevo_cliente)
+                        # self.arbolAVL.insertarNodo(self.arbolAVL.raiz, nuevo_nodo)
+
+                    elif categoria == "Vehículos":
+
+                        if not line.strip().endswith(';'):
+                            messagebox.showerror("Error", f"Formato incorrecto en la línea: {line.strip()}")
+                            continue
+
+                        datos = line.strip()[:-1].split(':')
+
+                        if len(datos) != 4:
+                            messagebox.showerror("Error", f"Formato incorrecto en la línea: {line.strip()}")
+                            continue
+
+                        placa, marca, modelo, precio = datos
+                        nuevo_vehiculo = Vehiculo(placa.strip(), marca.strip(), modelo.strip(), precio.strip())
+                        print (f"Vehículo: {nuevo_vehiculo.__str__()} agregado")
+                        # nuevo_nodo = NodoB(nuevo_vehiculo)
+                        # self.arbolB.insertarNodo(nuevo_nodo)
+
+                    elif categoria == "Rutas":
+
+                        if not line.strip().endswith('%'):
+                            messagebox.showerror("Error", f"Formato incorrecto en la línea: {line.strip()}")
+                            continue
+
+                        datos = line.strip()[:-1].split('/')
+
+                        if len(datos) != 3:
+                            messagebox.showerror("Error", f"Formato incorrecto en la línea: {line.strip()}")
+                            continue
+
+                        origen, destino, tiempo = datos
+                        nueva_ruta = Ruta(origen.strip(), destino.strip(), tiempo.strip())
+                        print (f"Ruta: {nueva_ruta.__str__()} agregada")
+                        # nuevo_nodo = NodoGrafo(nuevo_viaje)
+                        # self.grafo.insertarNodo(nuevo_nodo)
+
+            messagebox.showinfo("Éxito", "Carga masiva de clientes completada")
+        except Exception as e:
+            messagebox.showerror("Error", f"Ocurrió un error al leer el archivo: {e}")
+        
     
     def iniciar(self):
         self.root.mainloop()

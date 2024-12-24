@@ -16,6 +16,7 @@ class Cliente:
 class NodoAVL:
     def __init__(self, cliente):
         self.cliente = cliente
+        self.factorEquilibrio = 0
         self.izquierda = None
         self.derecha = None
 
@@ -25,12 +26,40 @@ class ArbolAVL:
 
     def insertarNodo(self, raiz, nodo):
         if raiz is None:
+            raiz = nodo
+            raiz.factorEquilibrio = self.calcularFactorEquilibrio(raiz)
             return nodo
 
         if int(nodo.cliente.dpi) < int(raiz.cliente.dpi):
             raiz.izquierda = self.insertarNodo(raiz.izquierda, nodo)
         elif int(nodo.cliente.dpi) > int(raiz.cliente.dpi):
             raiz.derecha = self.insertarNodo(raiz.derecha, nodo)
+
+        raiz.factorEquilibrio = self.calcularFactorEquilibrio(raiz)
+
+        if raiz.factorEquilibrio <= -2:
+            if raiz.izquierda.factorEquilibrio <= 0:
+                if self.raiz == raiz:
+                    self.raiz = self.rotacionSimpleIzquierda(raiz)
+                    return self.raiz
+                raiz = self.rotacionSimpleIzquierda(raiz)
+            else:
+                if self.raiz == raiz:
+                    self.raiz = self.rotacionCompuestaIzquierda(raiz)
+                    return self.raiz
+                raiz = self.rotacionCompuestaIzquierda(raiz)
+
+        if raiz.factorEquilibrio >= 2:
+            if raiz.derecha.factorEquilibrio >= 0:
+                if self.raiz == raiz:
+                    self.raiz = self.rotacionSimpleDerecha(raiz)
+                    return self.raiz
+                raiz = self.rotacionSimpleDerecha(raiz)
+            else:
+                if self.raiz == raiz:
+                    self.raiz = self.rotacionCompuestaDerecha(raiz)
+                    return self.raiz
+                raiz = self.rotacionCompuestaDerecha(raiz)
         
         return raiz
 
@@ -77,10 +106,76 @@ class ArbolAVL:
     def esHoja(self, nodo) -> bool:
         return nodo.izquierda == None and nodo.derecha == None
     
+    def obtenerAltura(self, nodo):
+        if nodo is None:
+            return 0
+        
+        alturaIzquierda = int(self.obtenerAltura(nodo.izquierda))
+        alturaDerecha = int(self.obtenerAltura(nodo.derecha))
+
+        return max(alturaIzquierda, alturaDerecha) + 1
+    
+    def calcularFactorEquilibrio(self, nodo):
+        if nodo is None:
+            return 0
+        return int(self.obtenerAltura(nodo.derecha)) - int(self.obtenerAltura(nodo.izquierda))
+
+    def rotacionSimpleIzquierda(self, nodo):
+        nodoAuxiliar = nodo.izquierda
+        nodo.izquierda = nodoAuxiliar.derecha
+        nodoAuxiliar.derecha = nodo
+        nodo = nodoAuxiliar
+
+        nodo.factorEquilibrio = self.calcularFactorEquilibrio(nodo)
+        if nodo.izquierda is not None:
+            nodo.izquierda.factorEquilibrio = self.calcularFactorEquilibrio(nodo.izquierda)
+        if nodo.derecha is not None:
+            nodo.derecha.factorEquilibrio = self.calcularFactorEquilibrio(nodo.derecha)
+
+        return nodo
+
+    def rotacionSimpleDerecha(self, nodo):
+        nodoAuxiliar = nodo.derecha
+        nodo.derecha = nodoAuxiliar.izquierda
+        nodoAuxiliar.izquierda = nodo
+        nodo = nodoAuxiliar
+
+        nodo.factorEquilibrio = self.calcularFactorEquilibrio(nodo)
+        if nodo.izquierda is not None:
+            nodo.izquierda.factorEquilibrio = self.calcularFactorEquilibrio(nodo.izquierda)
+        if nodo.derecha is not None:
+            nodo.derecha.factorEquilibrio = self.calcularFactorEquilibrio(nodo.derecha)
+
+        return nodo
+    
+    def rotacionCompuestaIzquierda(self, nodo):
+        nodo.izquierda = self.rotacionSimpleDerecha(nodo.izquierda)
+        return self.rotacionSimpleIzquierda(nodo)
+
+    def rotacionCompuestaDerecha(self, nodo):
+        nodo.derecha = self.rotacionSimpleIzquierda(nodo.derecha)
+        return self.rotacionSimpleDerecha(nodo)
+    
     def devolverNodo(self, nodo):
         return nodo.cliente.__str__()
     
-    def recorridoPreOrden(self, nodo, resultado, graphviz_lines):
+    def buscarNodo(self, raiz, dpi):
+        if raiz is None:
+            return None
+
+        if int(dpi) == int(raiz.cliente.dpi):
+            return raiz.cliente
+
+        if int(dpi) < int(raiz.cliente.dpi):
+            return self.buscarNodo(raiz.izquierda, dpi)
+        
+        else:
+            return self.buscarNodo(raiz.derecha, dpi)
+
+    def buscarCliente(self, dpi):
+        return self.buscarNodo(self.raiz, dpi)
+    
+    def recorridoReporte(self, nodo, resultado, graphviz_lines):
         if nodo is None:
             return
             
@@ -99,14 +194,14 @@ class ArbolAVL:
             'shape=box, style=filled, fillcolor=lightblue, '
             'width=2.5, height=1.5];\n'
         )
-        
+         
         if nodo.izquierda is not None:
             graphviz_lines.append(f'    "{nodo.cliente.dpi}" -> "{nodo.izquierda.cliente.dpi}" [tailport=s, headport=n];\n')
-            self.recorridoPreOrden(nodo.izquierda, resultado, graphviz_lines)
+            self.recorridoReporte(nodo.izquierda, resultado, graphviz_lines)
         
         if nodo.derecha is not None:
             graphviz_lines.append(f'    "{nodo.cliente.dpi}" -> "{nodo.derecha.cliente.dpi}" [tailport=s, headport=n];\n')
-            self.recorridoPreOrden(nodo.derecha, resultado, graphviz_lines)
+            self.recorridoReporte(nodo.derecha, resultado, graphviz_lines)
 
     def generar_reporte(self):
         if self.raiz is None:
@@ -126,7 +221,7 @@ class ArbolAVL:
         ]
         
         try:
-            self.recorridoPreOrden(self.raiz, resultado, graphviz_lines)
+            self.recorridoReporte(self.raiz, resultado, graphviz_lines)
             graphviz_lines.append("}\n")
             
             reportes_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'reportes')

@@ -321,13 +321,10 @@ class Interfaz:
         btn_frame.bind('<Enter>', lambda e: self.on_enter(btn_frame))
         btn_frame.bind('<Leave>', lambda e: self.on_leave(btn_frame))
 
-
-
     def procesar_cliente(self, dpi, nombres, apellidos, genero, telefono, direccion, ventana):
         if dpi.strip() and nombres.strip() and apellidos.strip() and genero.strip() and telefono.strip() and direccion.strip():
             nuevo_cliente = Cliente(dpi, nombres, apellidos, genero, telefono, direccion)
-            nuevo_nodo = NodoAVL(nuevo_cliente)
-            self.arbolAVL.insertarNodo(self.arbolAVL.raiz, nuevo_nodo)
+            self.arbolAVL.insertarCliente(nuevo_cliente)
             messagebox.showinfo(
                 "Información",
                 f"Cliente agregado:\nDPI: {dpi}\nNombres: {nombres}\nApellidos: {apellidos}\nGénero: {genero}\nTeléfono: {telefono}\nDirección: {direccion}"
@@ -396,30 +393,231 @@ class Interfaz:
                     f"¿Desea eliminar el {categoria} con llave {llave}?"
                 )
                 if respuesta:
-                    eliminado = self.arbolAVL.eliminarCliente(llave)
+                    eliminado = False
+                    if categoria == "Clientes":
+                        eliminado = self.arbolAVL.eliminarCliente(llave)
+                    elif categoria == "Vehículos":
+                        # eliminado = self.arbolB.eliminarNodo(llave)
+                        pass
+                    elif categoria == "Rutas":
+                        # eliminado = self.grafo.eliminarNodo(llave)
+                        pass
+                    elif categoria == "Viajes":
+                        # eliminado = self.lista.eliminarNodo(llave)
+                        pass
                     
                     if eliminado:
-                        messagebox.showinfo("Éxito", f"Se ha eliminado correctamente al {categoria}.")
+                        messagebox.showinfo("Éxito", f"Se ha eliminado correctamente el registro de {categoria}.")
                     else:
-                        messagebox.showerror("Error", f"No se ha podido eliminar al {categoria}.")
+                        messagebox.showerror("Error", f"No se ha podido eliminar el registro de {categoria}.")
                 else:
                     return
             # self.procesar_llave(llave, categoria, accion, ventana_llave)
+            elif accion == "Modificar":
+                if categoria == "Clientes":
+                    self.modificar_cliente(llave)
+                    pass
+                elif categoria == "Vehículos":
+                    #self.modificar_vehiculo(llave)
+                    pass
+                elif categoria == "Rutas":
+                    #self.modificar_ruta(llave)
+                    pass
+                elif categoria == "Viajes":
+                    #self.modificar_viaje(llave)
+                    pass
+            elif accion == "Mostrar Información":
+                self.mostrar_informacion(llave, categoria)
+                
         
         btn_frame.bind('<Button-1>', on_confirmar_click)
         btn_label.bind('<Button-1>', on_confirmar_click)
         btn_frame.bind('<Enter>', lambda e, f=btn_frame: self.on_enter(f))
         btn_frame.bind('<Leave>', lambda e, f=btn_frame: self.on_leave(f))
     
-    def procesar_llave(self, llave, categoria, accion, ventana):
-        if llave.strip():
-            messagebox.showinfo(
-                "Información",
-                f"Acción: {accion}\nCategoría: {categoria}\nLlave: {llave}\n(en desarrollo)"
+    def modificar_cliente(self, dpi):
+        cliente = self.arbolAVL.buscarCliente(dpi)
+        if not cliente:
+            messagebox.showerror("Error", f"No se encontró el cliente con DPI {dpi}")
+            return
+    
+        ventana_modificar = tk.Toplevel(self.root)
+        ventana_modificar.title("Modificar Cliente")
+        ventana_modificar.geometry("500x500")
+        ventana_modificar.configure(bg="#e8eaf6")
+        
+        tk.Label(
+            ventana_modificar,
+            text=f"Modificar al cliente {dpi}",
+            font=("Helvetica", 16, "bold"),
+            bg="#1a237e",
+            fg="white",
+            pady=10
+        ).pack(fill="x")
+        
+        frame = tk.Frame(ventana_modificar, bg="#e8eaf6")
+        frame.pack(expand=True, fill="both", padx=30, pady=20)
+        
+        tk.Label(
+            frame,
+            text="Ingrese los nuevos datos del cliente:",
+            font=("Helvetica", 12),
+            bg="#e8eaf6"
+        ).pack(pady=10)
+        
+        def crear_campo(parent, label_text, valor_inicial, tipo="texto"):
+            container = tk.Frame(parent, bg="#e8eaf6")
+            container.pack(fill="x", pady=5)
+            
+            label = tk.Label(
+                container,
+                text=label_text,
+                font=("Helvetica", 12),
+                bg="#e8eaf6",
+                width=10,
+                anchor="e"
             )
-            ventana.destroy()
+            label.pack(side="left", padx=5)
+            
+            if tipo == "texto":
+                entry = tk.Entry(container, font=("Helvetica", 12), relief="solid", bd=1, width=30)
+                entry.insert(0, valor_inicial)
+            elif tipo == "telefono":
+                entry = tk.Entry(container, font=("Helvetica", 12), relief="solid", bd=1, width=30)
+                entry.insert(0, valor_inicial)
+                entry.config(validate="key", validatecommand=(parent.register(lambda val: val.isdigit() and len(val) <= 8), '%P'))
+            elif tipo == "opciones":
+                opciones = ["Masculino", "Femenino", "Otro"]
+                entry = tk.StringVar(container)
+                entry.set(valor_inicial)
+                tk.OptionMenu(container, entry, *opciones).pack(side="left", padx=5)
+                return entry
+            
+            entry.pack(side="left", padx=5)
+            return entry
+        
+        nombres_entry = crear_campo(frame, "Nombres:", cliente.nombres)
+        apellidos_entry = crear_campo(frame, "Apellidos:", cliente.apellidos)
+        genero_entry = crear_campo(frame, "Género:", cliente.genero, "opciones")
+        telefono_entry = crear_campo(frame, "Teléfono:", cliente.telefono, "telefono")
+        direccion_entry = crear_campo(frame, "Dirección:", cliente.direccion)
+        
+        def enviar_formulario():
+            cliente.nombres = nombres_entry.get()
+            cliente.apellidos = apellidos_entry.get()
+            cliente.genero = genero_entry.get()
+            cliente.telefono = telefono_entry.get()
+            cliente.direccion = direccion_entry.get()
+            messagebox.showinfo("Éxito", "Cliente modificado correctamente")
+            ventana_modificar.destroy()
+        
+        btn_container = tk.Frame(frame, bg="#e8eaf6")
+        btn_container.pack(pady=20)
+        
+        btn_frame = tk.Frame(
+            btn_container,
+            bg="#303f9f",
+            relief="raised",
+            bd=1,
+            cursor="hand2"
+        )
+        btn_frame.pack()
+        
+        btn_label = tk.Label(
+            btn_frame,
+            text="Modificar Cliente",
+            font=("Helvetica", 12),
+            bg="#303f9f",
+            fg="white",
+            padx=20,
+            pady=8,
+            cursor="hand2"
+        )
+        btn_label.pack()
+        
+        btn_frame.bind('<Button-1>', lambda e: enviar_formulario())
+        btn_label.bind('<Button-1>', lambda e: enviar_formulario())
+        btn_frame.bind('<Enter>', lambda e: self.on_enter(btn_frame))
+        btn_frame.bind('<Leave>', lambda e: self.on_leave(btn_frame))
+
+    def mostrar_informacion(self, llave, categoria):
+        if categoria == "Clientes":
+            cliente = self.arbolAVL.buscarCliente(llave)
+            if not cliente:
+                messagebox.showerror("Error", f"No se encontró el cliente con DPI {llave}")
+                return
+
+            ventana_info = tk.Toplevel(self.root)
+            ventana_info.title("Información del Cliente")
+            ventana_info.geometry("400x400")
+            ventana_info.configure(bg="#e8eaf6")
+            
+            tk.Label(
+                ventana_info,
+                text=f"Información del cliente {llave}",
+                font=("Helvetica", 16, "bold"),
+                bg="#1a237e",
+                fg="white",
+                pady=10
+            ).pack(fill="x")
+            
+            frame = tk.Frame(ventana_info, bg="#e8eaf6")
+            frame.pack(expand=True, fill="both", padx=30, pady=20)
+            
+            def crear_campo_informacion(parent, label_text, valor):
+                container = tk.Frame(parent, bg="#e8eaf6")
+                container.pack(fill="x", pady=5)
+                
+                label = tk.Label(
+                    container,
+                    text=label_text,
+                    font=("Helvetica", 12),
+                    bg="#e8eaf6",
+                    width=15,
+                    anchor="e"
+                )
+                label.pack(side="left", padx=5)
+                
+                valor_label = tk.Label(
+                    container,
+                    text=valor,
+                    font=("Helvetica", 12),
+                    bg="#e8eaf6",
+                    anchor="w"
+                )
+                valor_label.pack(side="left", padx=5)
+
+
+            crear_campo_informacion(frame, "DPI:", cliente.dpi)
+            crear_campo_informacion(frame, "Nombres:", cliente.nombres)
+            crear_campo_informacion(frame, "Apellidos:", cliente.apellidos)
+            crear_campo_informacion(frame, "Género:", cliente.genero)
+            crear_campo_informacion(frame, "Teléfono:", cliente.telefono)
+            crear_campo_informacion(frame, "Dirección:", cliente.direccion)
+            
+            btn_frame = tk.Frame(
+                frame,
+                bg="#303f9f",
+                relief="raised",
+                bd=1
+            )
+            btn_frame.pack(pady=15)
+            
+            tk.Label(
+                btn_frame,
+                text="Cerrar",
+                font=("Helvetica", 12),
+                bg="#303f9f",
+                fg="white",
+                padx=20,
+                pady=8
+            ).pack()
+            
+            btn_frame.bind('<Button-1>', lambda e: ventana_info.destroy())
+            btn_frame.bind('<Enter>', lambda e, f=btn_frame: self.on_enter(f))
+            btn_frame.bind('<Leave>', lambda e, f=btn_frame: self.on_leave(f))
         else:
-            messagebox.showerror("Error", "Por favor ingrese una llave válida")
+            messagebox.showinfo("Información", f"Mostrar información de {categoria} (en desarrollo)")
 
     def carga_masiva(self, categoria):
         current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -439,7 +637,6 @@ class Interfaz:
             with open(file_path, 'r', encoding='utf-8') as file:
                 for line in file:
                     if categoria == "Clientes":
-
                         if not line.strip().endswith(';'):
                             messagebox.showerror("Error", f"Formato incorrecto en la línea: {line.strip()}")
                             continue

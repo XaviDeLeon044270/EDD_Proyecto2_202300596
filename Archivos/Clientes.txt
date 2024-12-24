@@ -1,3 +1,10 @@
-221374732231, José Carlos, López Morales, Masculino, 54789832, 19 Av.17-01 Z.6 Ciudad de Guatemala;
-321456789012, María Fernanda, Pérez Gómez, Femenino, 55678901, 5 Calle 10-15 Z.1 Ciudad de Guatemala;
-123456789012, Juan Antonio, Rodríguez Díaz, Masculino, 56789012, 12 Av. 4-56 Z.10 Ciudad de Guatemala;
+10, José Carlos, López Morales, Masculino, 54789832, 19 Av.17-01 Z.6 Ciudad de Guatemala;
+5, María Fernanda, Pérez Gómez, Femenino, 55678901, 5 Calle 10-15 Z.1 Ciudad de Guatemala;
+15, Juan Antonio, Rodríguez Díaz, Masculino, 56789012, 12 Av. 4-56 Z.10 Ciudad de Guatemala;
+1, Ana Patricia, López García, Femenino, 51234567, 8 Calle 3-45 Z.2 Ciudad de Guatemala;
+3, Carlos Alberto, Martínez Ruiz, Masculino, 52345678, 10 Av. 5-67 Z.3 Ciudad de Guatemala;
+0, Laura Beatriz, Hernández López, Femenino, 53456789, 7 Calle 4-89 Z.4 Ciudad de Guatemala;
+6, Pedro José, Ramírez Torres, Masculino, 54567890, 6 Av. 2-34 Z.5 Ciudad de Guatemala;
+12, Sofía Margarita, Gómez Pérez, Femenino, 55678901, 9 Calle 1-23 Z.6 Ciudad de Guatemala;
+14, Luis Fernando, Ortiz Morales, Masculino, 56789012, 11 Av. 6-78 Z.7 Ciudad de Guatemala;
+11, Gabriela Isabel, Castillo Díaz, Femenino, 57890123, 13 Calle 7-89 Z.8 Ciudad de Guatemala;

@@ -201,12 +201,16 @@ class Interfaz:
     def ejecutar_accion(self, categoria, accion):
         if accion == "Modificar" or accion == "Eliminar" or accion == "Mostrar Información":
             self.solicitar_llave(categoria, accion)
-        elif "agregar" in accion.lower():
+        elif accion == "Agregar":
             if categoria == "Clientes":
                 self.agregar_cliente()
 
         elif accion == "Carga masiva":
-            self.carga_masiva_clientes(categoria)
+            self.carga_masiva(categoria)
+
+        elif accion == "Mostrar Estructura de Datos":
+            if categoria == "Clientes":
+                self.arbolAVL.generar_reporte()
         else:
             messagebox.showinfo(
                 "Información",
@@ -335,7 +339,7 @@ class Interfaz:
     def solicitar_llave(self, categoria, accion):
         ventana_llave = tk.Toplevel(self.root)
         ventana_llave.title("Ingresar Llave")
-        ventana_llave.geometry("400x250")
+        ventana_llave.geometry("450x250")
         ventana_llave.configure(bg="#e8eaf6")
         
         tk.Label(
@@ -352,7 +356,7 @@ class Interfaz:
         
         tk.Label(
             frame,
-            text=f"Ingrese la llave del registro de {categoria}:",
+            text=f"Ingrese la llave para {accion} el registro de {categoria}:",
             font=("Helvetica", 12),
             bg="#e8eaf6"
         ).pack(pady=10)
@@ -373,7 +377,7 @@ class Interfaz:
         )
         btn_frame.pack(pady=15)
         
-        tk.Label(
+        btn_label = tk.Label(
             btn_frame,
             text="Confirmar",
             font=("Helvetica", 12),
@@ -381,11 +385,29 @@ class Interfaz:
             fg="white",
             padx=20,
             pady=8
-        ).pack()
+        )
+        btn_label.pack()
         
-        btn_frame.bind('<Button-1>', lambda e: self.procesar_llave(
-            entrada.get(), categoria, accion, ventana_llave
-        ))
+        def on_confirmar_click(event):
+            llave = entrada.get()
+            if accion == "Eliminar":
+                respuesta = messagebox.askyesno(
+                    "Advertencia",
+                    f"¿Desea eliminar el {categoria} con llave {llave}?"
+                )
+                if respuesta:
+                    eliminado = self.arbolAVL.eliminarCliente(llave)
+                    
+                    if eliminado:
+                        messagebox.showinfo("Éxito", f"Se ha eliminado correctamente al {categoria}.")
+                    else:
+                        messagebox.showerror("Error", f"No se ha podido eliminar al {categoria}.")
+                else:
+                    return
+            # self.procesar_llave(llave, categoria, accion, ventana_llave)
+        
+        btn_frame.bind('<Button-1>', on_confirmar_click)
+        btn_label.bind('<Button-1>', on_confirmar_click)
         btn_frame.bind('<Enter>', lambda e, f=btn_frame: self.on_enter(f))
         btn_frame.bind('<Leave>', lambda e, f=btn_frame: self.on_leave(f))
     
@@ -399,7 +421,7 @@ class Interfaz:
         else:
             messagebox.showerror("Error", "Por favor ingrese una llave válida")
 
-    def carga_masiva_clientes(self, categoria):
+    def carga_masiva(self, categoria):
         current_dir = os.path.dirname(os.path.abspath(__file__))
         archivos_dir = os.path.join(current_dir, 'Archivos')
         
@@ -430,9 +452,8 @@ class Interfaz:
 
                         dpi, nombres, apellidos, genero, telefono, direccion = datos
                         nuevo_cliente = Cliente(dpi.strip(), nombres.strip(), apellidos.strip(), genero.strip(), telefono.strip(), direccion.strip())
-                        print (f"Cliente: {nuevo_cliente.__str__()} agregado")
-                        # nuevo_nodo = NodoAVL(nuevo_cliente)
-                        # self.arbolAVL.insertarNodo(self.arbolAVL.raiz, nuevo_nodo)
+                        # print (f"Cliente: {nuevo_cliente.__str__()} agregado")
+                        self.arbolAVL.insertarCliente(nuevo_cliente)
 
                     elif categoria == "Vehículos":
 
@@ -474,7 +495,6 @@ class Interfaz:
         except Exception as e:
             messagebox.showerror("Error", f"Ocurrió un error al leer el archivo: {e}")
         
-    
     def iniciar(self):
         self.root.mainloop()
 

@@ -1,0 +1,24 @@
+digraph G {
+    node [fontname=Arial, shape=box, style=filled, fillcolor=lightblue];
+    edge [fontname=Arial];
+    rankdir=TB;
+    nodesep=0.5;
+    ranksep=0.7;
+    splines=ortho;
+    ordering="out";
+    "10" [label="10\nJosé Carlos López Morales\nMasculino\n54789832\n19 Av.17-01 Z.6 Ciudad de Guatemala", shape=box, style=filled, fillcolor=lightblue, width=2.5, height=1.5];
+    "10" -> "5" [tailport=s, headport=n];
+    "5" [label="5\nMaría Fernanda Pérez Gómez\nFemenino\n55678901\n5 Calle 10-15 Z.1 Ciudad de Guatemala", shape=box, style=filled, fillcolor=lightblue, width=2.5, height=1.5];
+    "5" -> "0" [tailport=s, headport=n];
+    "0" [label="0\nLaura Beatriz Hernández López\nFemenino\n53456789\n7 Calle 4-89 Z.4 Ciudad de Guatemala", shape=box, style=filled, fillcolor=lightblue, width=2.5, height=1.5];
+    "0" -> "3" [tailport=s, headport=n];
+    "3" [label="3\nCarlos Alberto Martínez Ruiz\nMasculino\n52345678\n10 Av. 5-67 Z.3 Ciudad de Guatemala", shape=box, style=filled, fillcolor=lightblue, width=2.5, height=1.5];
+    "5" -> "6" [tailport=s, headport=n];
+    "6" [label="6\nPedro José Ramírez Torres\nMasculino\n54567890\n6 Av. 2-34 Z.5 Ciudad de Guatemala", shape=box, style=filled, fillcolor=lightblue, width=2.5, height=1.5];
+    "10" -> "12" [tailport=s, headport=n];
+    "12" [label="12\nSofía Margarita Gómez Pérez\nFemenino\n55678901\n9 Calle 1-23 Z.6 Ciudad de Guatemala", shape=box, style=filled, fillcolor=lightblue, width=2.5, height=1.5];
+    "12" -> "11" [tailport=s, headport=n];
+    "11" [label="11\nGabriela Isabel Castillo Díaz\nFemenino\n57890123\n13 Calle 7-89 Z.8 Ciudad de Guatemala", shape=box, style=filled, fillcolor=lightblue, width=2.5, height=1.5];
+    "12" -> "14" [tailport=s, headport=n];
+    "14" [label="14\nLuis Fernando Ortiz Morales\nMasculino\n56789012\n11 Av. 6-78 Z.7 Ciudad de Guatemala", shape=box, style=filled, fillcolor=lightblue, width=2.5, height=1.5];
+}

@@ -1,5 +1,4 @@
-import os
-import subprocess
+import os, subprocess
 
 class Cliente:
     def __init__(self, dpi, nombres, apellidos, genero, telefono, direccion):

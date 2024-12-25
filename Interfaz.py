@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
-from Cliente import Cliente, NodoAVL, ArbolAVL
-from Vehiculo import Vehiculo
+from Cliente import Cliente, ArbolAVL
+from Vehiculo import Vehiculo, ArbolB
 from Ruta import Ruta
 import os
 
@@ -9,6 +9,7 @@ class Interfaz:
 
     def __init__(self):
         self.arbolAVL = ArbolAVL()
+        self.arbolB = ArbolB(5)
         self.root = tk.Tk()
         self.root.title("Llega Rapidito - Sistema de Gestión")
         self.root.geometry("900x700")
@@ -204,6 +205,9 @@ class Interfaz:
         elif accion == "Agregar":
             if categoria == "Clientes":
                 self.agregar_cliente()
+            
+            elif categoria == "Vehículos":
+                self.agregar_vehiculo()
 
         elif accion == "Carga masiva":
             self.carga_masiva(categoria)
@@ -211,6 +215,8 @@ class Interfaz:
         elif accion == "Mostrar Estructura de Datos":
             if categoria == "Clientes":
                 self.arbolAVL.generar_reporte()
+            elif categoria == "Vehículos":
+                self.arbolB.generar_reporte()
         else:
             messagebox.showinfo(
                 "Información",
@@ -332,6 +338,113 @@ class Interfaz:
             ventana.destroy()
         else:
             messagebox.showerror("Error", "Por favor complete todos los campos")
+    
+    def agregar_vehiculo(self):
+        ventana_vehiculo = tk.Toplevel(self.root)
+        ventana_vehiculo.title("Agregar Vehículo")
+        ventana_vehiculo.geometry("500x500")
+        ventana_vehiculo.configure(bg="#e8eaf6")
+        
+        tk.Label(
+            ventana_vehiculo,
+            text="Agregar Vehículo",
+            font=("Helvetica", 16, "bold"),
+            bg="#1a237e",
+            fg="white",
+            pady=10
+        ).pack(fill="x")
+        
+        frame = tk.Frame(ventana_vehiculo, bg="#e8eaf6")
+        frame.pack(expand=True, fill="both", padx=30, pady=20)
+        
+        tk.Label(
+            frame,
+            text="Ingrese los datos del vehículo:",
+            font=("Helvetica", 12),
+            bg="#e8eaf6"
+        ).pack(pady=10)
+        
+        def crear_campo(parent, label_text, tipo="texto"):
+            container = tk.Frame(parent, bg="#e8eaf6")
+            container.pack(fill="x", pady=5)
+            
+            label = tk.Label(
+                container,
+                text=label_text,
+                font=("Helvetica", 12),
+                bg="#e8eaf6",
+                width=10,
+                anchor="e"
+            )
+            label.pack(side="left", padx=5)
+            
+            if tipo == "texto":
+                entry = tk.Entry(container, font=("Helvetica", 12), relief="solid", bd=1, width=30)
+            elif tipo == "numerico":
+                entry = tk.Entry(container, font=("Helvetica", 12), relief="solid", bd=1, width=30)
+                entry.config(validate="key", validatecommand=(parent.register(lambda val: val.isdigit()), '%P'))
+            
+            entry.pack(side="left", padx=5)
+            return entry
+        
+        placa_entry = crear_campo(frame, "Placa:", "texto")
+        marca_entry = crear_campo(frame, "Marca:", "texto")
+        modelo_entry = crear_campo(frame, "Modelo:", "texto")
+        precio_entry = crear_campo(frame, "Precio:", "numerico")
+        
+        def enviar_formulario():
+            self.procesar_vehiculo(
+                placa_entry.get(),
+                marca_entry.get(),
+                modelo_entry.get(),
+                precio_entry.get(),
+                ventana_vehiculo
+            )
+            
+            
+            ventana_vehiculo.destroy()
+        
+        btn_container = tk.Frame(frame, bg="#e8eaf6")
+        btn_container.pack(pady=20)
+        
+        btn_frame = tk.Frame(
+            btn_container,
+            bg="#303f9f",
+            relief="raised",
+            bd=1,
+            cursor="hand2"
+        )
+        btn_frame.pack()
+        
+        btn_label = tk.Label(
+            btn_frame,
+            text="Agregar Vehículo",
+            font=("Helvetica", 12),
+            bg="#303f9f",
+            fg="white",
+            padx=20,
+            pady=8,
+            cursor="hand2"
+        )
+        btn_label.pack()
+        
+        btn_frame.bind('<Button-1>', lambda e: enviar_formulario())
+        btn_label.bind('<Button-1>', lambda e: enviar_formulario())
+        btn_frame.bind('<Enter>', lambda e: self.on_enter(btn_frame))
+        btn_frame.bind('<Leave>', lambda e: self.on_leave(btn_frame))
+
+    def procesar_vehiculo(self, placa, marca, modelo, precio, ventana):
+        if placa.strip() and marca.strip() and modelo.strip() and precio.strip():
+            nuevo_vehiculo = Vehiculo(placa, marca, modelo, precio)
+            self.arbolB.insertarVehiculo(nuevo_vehiculo)
+            messagebox.showinfo(
+                "Información",
+                f"Vehículo agregado:\nPlaca: {placa}\nMarca: {marca}\nModelo: {modelo}\nPrecio: {precio}"
+            )
+            ventana.destroy()
+        else:
+            messagebox.showerror("Error", "Por favor complete todos los campos")
+            
 
     def solicitar_llave(self, categoria, accion):
         ventana_llave = tk.Toplevel(self.root)
@@ -397,7 +510,7 @@ class Interfaz:
                     if categoria == "Clientes":
                         eliminado = self.arbolAVL.eliminarCliente(llave)
                     elif categoria == "Vehículos":
-                        # eliminado = self.arbolB.eliminarNodo(llave)
+                        eliminado = self.arbolB.eliminarVehiculo(llave)
                         pass
                     elif categoria == "Rutas":
                         # eliminado = self.grafo.eliminarNodo(llave)
@@ -418,7 +531,7 @@ class Interfaz:
                     self.modificar_cliente(llave)
                     pass
                 elif categoria == "Vehículos":
-                    #self.modificar_vehiculo(llave)
+                    self.modificar_vehiculo(llave)
                     pass
                 elif categoria == "Rutas":
                     #self.modificar_ruta(llave)
@@ -540,6 +653,101 @@ class Interfaz:
         btn_frame.bind('<Enter>', lambda e: self.on_enter(btn_frame))
         btn_frame.bind('<Leave>', lambda e: self.on_leave(btn_frame))
 
+    def modificar_vehiculo(self, placa):
+        vehiculo = self.arbolB.buscarVehiculo(placa)
+        if not vehiculo:
+            messagebox.showerror("Error", f"No se encontró el vehículo con placa {placa}")
+            return
+    
+        ventana_modificar = tk.Toplevel(self.root)
+        ventana_modificar.title("Modificar Vehículo")
+        ventana_modificar.geometry("500x500")
+        ventana_modificar.configure(bg="#e8eaf6")
+        
+        tk.Label(
+            ventana_modificar,
+            text=f"Modificar al vehículo {placa}",
+            font=("Helvetica", 16, "bold"),
+            bg="#1a237e",
+            fg="white",
+            pady=10
+        ).pack(fill="x")
+        
+        frame = tk.Frame(ventana_modificar, bg="#e8eaf6")
+        frame.pack(expand=True, fill="both", padx=30, pady=20)
+        
+        tk.Label(
+            frame,
+            text="Ingrese los nuevos datos del vehículo:",
+            font=("Helvetica", 12),
+            bg="#e8eaf6"
+        ).pack(pady=10)
+        
+        def crear_campo(parent, label_text, valor_inicial, tipo="texto"):
+            container = tk.Frame(parent, bg="#e8eaf6")
+            container.pack(fill="x", pady=5)
+            
+            label = tk.Label(
+                container,
+                text=label_text,
+                font=("Helvetica", 12),
+                bg="#e8eaf6",
+                width=10,
+                anchor="e"
+            )
+            label.pack(side="left", padx=5)
+            
+            if tipo == "texto":
+                entry = tk.Entry(container, font=("Helvetica", 12), relief="solid", bd=1, width=30)
+                entry.insert(0, valor_inicial)
+            elif tipo == "numerico":
+                entry = tk.Entry(container, font=("Helvetica", 12), relief="solid", bd=1, width=30)
+                entry.insert(0, valor_inicial)
+                entry.config(validate="key", validatecommand=(parent.register(lambda val: val.isdigit()), '%P'))
+            
+            entry.pack(side="left", padx=5)
+            return entry
+        
+        marca_entry = crear_campo(frame, "Marca:", vehiculo.marca)
+        modelo_entry = crear_campo(frame, "Modelo:", vehiculo.modelo)
+        precio_entry = crear_campo(frame, "Precio:", vehiculo.precio, "numerico")
+
+        def enviar_formulario():
+            vehiculo.marca = marca_entry.get()
+            vehiculo.modelo = modelo_entry.get()
+            vehiculo.precio = precio_entry.get()
+            messagebox.showinfo("Éxito", "Vehículo modificado correctamente")
+            ventana_modificar.destroy()
+
+        btn_container = tk.Frame(frame, bg="#e8eaf6")
+        btn_container.pack(pady=20)
+
+        btn_frame = tk.Frame(
+            btn_container,
+            bg="#303f9f",
+            relief="raised",
+            bd=1,
+            cursor="hand2"
+        )
+        btn_frame.pack()
+
+        btn_label = tk.Label(
+            btn_frame,
+            text="Modificar Vehículo",
+            font=("Helvetica", 12),
+            bg="#303f9f",
+            fg="white",
+            padx=20,
+            pady=8,
+            cursor="hand2"
+        )
+        btn_label.pack()
+
+        btn_frame.bind('<Button-1>', lambda e: enviar_formulario())
+        btn_label.bind('<Button-1>', lambda e: enviar_formulario())
+        btn_frame.bind('<Enter>', lambda e: self.on_enter(btn_frame))
+        btn_frame.bind('<Leave>', lambda e: self.on_leave(btn_frame))
+
     def mostrar_informacion(self, llave, categoria):
         if categoria == "Clientes":
             cliente = self.arbolAVL.buscarCliente(llave)
@@ -603,7 +811,7 @@ class Interfaz:
             )
             btn_frame.pack(pady=15)
             
-            tk.Label(
+            btn_label = tk.Label(
                 btn_frame,
                 text="Cerrar",
                 font=("Helvetica", 12),
@@ -611,11 +819,95 @@ class Interfaz:
                 fg="white",
                 padx=20,
                 pady=8
-            ).pack()
+            )
+            btn_label.pack()
             
-            btn_frame.bind('<Button-1>', lambda e: ventana_info.destroy())
+            def cerrar_ventana(event):
+                ventana_info.destroy()
+            
+            btn_frame.bind('<Button-1>', cerrar_ventana)
+            btn_label.bind('<Button-1>', cerrar_ventana)
             btn_frame.bind('<Enter>', lambda e, f=btn_frame: self.on_enter(f))
             btn_frame.bind('<Leave>', lambda e, f=btn_frame: self.on_leave(f))
+
+        elif categoria == "Vehículos":
+            vehiculo = self.arbolB.buscarVehiculo(llave)
+            if not vehiculo:
+                messagebox.showerror("Error", f"No se encontró el vehículo con placa {llave}")
+                return
+            
+            ventana_info = tk.Toplevel(self.root)
+            ventana_info.title("Información del Vehículo")
+            ventana_info.geometry("400x400")
+            ventana_info.configure(bg="#e8eaf6")
+
+            tk.Label(
+                ventana_info,
+                text=f"Información del vehículo {llave}",
+                font=("Helvetica", 16, "bold"),
+                bg="#1a237e",
+                fg="white",
+                pady=10
+            ).pack(fill="x")
+
+            frame = tk.Frame(ventana_info, bg="#e8eaf6")
+            frame.pack(expand=True, fill="both", padx=30, pady=20)
+
+            def crear_campo_informacion(parent, label_text, valor):
+                container = tk.Frame(parent, bg="#e8eaf6")
+                container.pack(fill="x", pady=5)
+
+                label = tk.Label(
+                    container,
+                    text=label_text,
+                    font=("Helvetica", 12),
+                    bg="#e8eaf6",
+                    width=15,
+                    anchor="e"
+                )
+                label.pack(side="left", padx=5)
+
+                valor_label = tk.Label(
+                    container,
+                    text=valor,
+                    font=("Helvetica", 12),
+                    bg="#e8eaf6",
+                    anchor="w"
+                )
+                valor_label.pack(side="left", padx=5)
+
+            crear_campo_informacion(frame, "Placa:", vehiculo.placa)
+            crear_campo_informacion(frame, "Marca:", vehiculo.marca)
+            crear_campo_informacion(frame, "Modelo:", vehiculo.modelo)
+            crear_campo_informacion(frame, "Precio:", vehiculo.precio)
+
+            btn_frame = tk.Frame(
+                frame,
+                bg="#303f9f",
+                relief="raised",
+                bd=1
+            )
+            btn_frame.pack(pady=15)
+            
+            btn_label = tk.Label(
+                btn_frame,
+                text="Cerrar",
+                font=("Helvetica", 12),
+                bg="#303f9f",
+                fg="white",
+                padx=20,
+                pady=8
+            )
+            btn_label.pack()
+            
+            def cerrar_ventana(event):
+                ventana_info.destroy()
+            
+            btn_frame.bind('<Button-1>', cerrar_ventana)
+            btn_label.bind('<Button-1>', cerrar_ventana)
+            btn_frame.bind('<Enter>', lambda e, f=btn_frame: self.on_enter(f))
+            btn_frame.bind('<Leave>', lambda e, f=btn_frame: self.on_leave(f))
+
         else:
             messagebox.showinfo("Información", f"Mostrar información de {categoria} (en desarrollo)")
 
@@ -649,7 +941,6 @@ class Interfaz:
 
                         dpi, nombres, apellidos, genero, telefono, direccion = datos
                         nuevo_cliente = Cliente(dpi.strip(), nombres.strip(), apellidos.strip(), genero.strip(), telefono.strip(), direccion.strip())
-                        # print (f"Cliente: {nuevo_cliente.__str__()} agregado")
                         self.arbolAVL.insertarCliente(nuevo_cliente)
 
                     elif categoria == "Vehículos":
@@ -665,10 +956,12 @@ class Interfaz:
                             continue
 
                         placa, marca, modelo, precio = datos
+                        if placa == "HIJ678":
+                            print("hola")
                         nuevo_vehiculo = Vehiculo(placa.strip(), marca.strip(), modelo.strip(), precio.strip())
-                        print (f"Vehículo: {nuevo_vehiculo.__str__()} agregado")
-                        # nuevo_nodo = NodoB(nuevo_vehiculo)
-                        # self.arbolB.insertarNodo(nuevo_nodo)
+                        #print (f"Vehículo: {nuevo_vehiculo.__str__()} agregado")
+                        self.arbolB.insertarVehiculo(nuevo_vehiculo)
+                        
 
                     elif categoria == "Rutas":
 
@@ -688,8 +981,9 @@ class Interfaz:
                         # nuevo_nodo = NodoGrafo(nuevo_viaje)
                         # self.grafo.insertarNodo(nuevo_nodo)
 
-            messagebox.showinfo("Éxito", "Carga masiva de clientes completada")
+            messagebox.showinfo("Éxito", f"Carga masiva de {categoria} completada")
         except Exception as e:
+            print(e)
             messagebox.showerror("Error", f"Ocurrió un error al leer el archivo: {e}")
         
     def iniciar(self):

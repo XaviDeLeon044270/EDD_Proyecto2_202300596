@@ -76,28 +76,22 @@ class ArbolB:
         if nodo is None:
             return None, False
 
-        # Buscar la placa en el nodo actual
         i = 0
         while i < len(nodo.pagina) and int(placa) > int(nodo.pagina[i].placa):
             i += 1
 
-        # Si encontramos la placa en el nodo actual
         if i < len(nodo.pagina) and int(placa) == int(nodo.pagina[i].placa):
-            # Si es un nodo hoja, simplemente eliminamos el vehículo
             if nodo.hoja:
                 nodo.pagina.pop(i)
                 return nodo, True
             
-            # Si no es hoja, tomamos el predecesor
             if len(nodo.hijos[i].pagina) > int((self.orden-1)/2):
-                # Encontrar el predecesor
                 actual = nodo.hijos[i]
                 while not actual.hoja:
                     actual = actual.hijos[-1]
                 nodo.pagina[i] = actual.pagina[-1]
                 nodo.hijos[i], eliminado = self.eliminarNodo(nodo.hijos[i], actual.pagina[-1].placa, eliminado)
             else:
-                # Fusionar nodos si es necesario
                 hijo_izq = nodo.hijos[i]
                 hijo_der = nodo.hijos[i + 1]
                 hijo_izq.pagina.append(nodo.pagina[i])
@@ -110,11 +104,9 @@ class ArbolB:
                 
             return nodo, True
         
-        # Si no encontramos la placa y es una hoja, el vehículo no existe
         if nodo.hoja:
             return nodo, False
         
-        # Recursión en el hijo correspondiente
         nodo.hijos[i], eliminado = self.eliminarNodo(nodo.hijos[i], placa, eliminado)
         
         return nodo, eliminado
@@ -123,7 +115,6 @@ class ArbolB:
         eliminado = False
         self.raiz, eliminado = self.eliminarNodo(self.raiz, placa, eliminado)
         
-        # Si la raíz quedó vacía y tiene hijos, actualizar la raíz
         if len(self.raiz.pagina) == 0 and not self.raiz.hoja:
             self.raiz = self.raiz.hijos[0]
             
@@ -239,10 +230,6 @@ class ArbolB:
             
             if resultado.returncode == 0:
                 print(f"Reporte generado exitosamente en: {png_path}")
-                if os.name == 'nt':
-                    os.startfile(png_path)
-                elif os.name == 'posix':
-                    subprocess.run(["xdg-open", png_path])
             else:
                 print(f"Error al generar el PNG: {resultado.stderr}")
                 

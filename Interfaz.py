@@ -1,8 +1,10 @@
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
+from PIL import Image, ImageTk
 from Cliente import Cliente, ArbolAVL
 from Vehiculo import Vehiculo, ArbolB
 from Ruta import Ruta
+
 import os
 
 class Interfaz:
@@ -215,8 +217,69 @@ class Interfaz:
         elif accion == "Mostrar Estructura de Datos":
             if categoria == "Clientes":
                 self.arbolAVL.generar_reporte()
+
+                ventana_reporte = tk.Toplevel(self.root)
+                ventana_reporte.title("Reporte del Árbol AVL")
+                ventana_reporte.configure(bg="#e8eaf6")
+                
+                ventana_reporte.state('zoomed')
+                
+                image_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'reportes', 'reporte_arbolAVL.png')
+                img = Image.open(image_path)
+                
+                ventana_reporte.update_idletasks()
+                window_width = ventana_reporte.winfo_width()
+                window_height = ventana_reporte.winfo_height()
+                
+                img_width, img_height = img.size
+                aspect_ratio = img_width / img_height
+                
+                if window_width / window_height > aspect_ratio:
+                    new_height = window_height
+                    new_width = int(new_height * aspect_ratio)
+                else:
+                    new_width = window_width
+                    new_height = int(new_width / aspect_ratio)
+                
+                img = img.resize((new_width, new_height), Image.LANCZOS)
+                img = ImageTk.PhotoImage(img)
+                
+                label_img = tk.Label(ventana_reporte, image=img)
+                label_img.image = img 
+                label_img.pack(expand=True)
+
             elif categoria == "Vehículos":
                 self.arbolB.generar_reporte()
+
+                ventana_reporte = tk.Toplevel(self.root)
+                ventana_reporte.title("Reporte del Árbol B")
+                ventana_reporte.configure(bg="#e8eaf6")
+                
+                ventana_reporte.state('zoomed')
+                
+                image_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'reportes', 'reporte_arbolB.png')
+                img = Image.open(image_path)
+                
+                ventana_reporte.update_idletasks()
+                window_width = ventana_reporte.winfo_width()
+                window_height = ventana_reporte.winfo_height()
+                
+                img_width, img_height = img.size
+                aspect_ratio = img_width / img_height
+                
+                if window_width / window_height > aspect_ratio:
+                    new_height = window_height
+                    new_width = int(new_height * aspect_ratio)
+                else:
+                    new_width = window_width
+                    new_height = int(new_width / aspect_ratio)
+                
+                img = img.resize((new_width, new_height), Image.LANCZOS)
+                img = ImageTk.PhotoImage(img)
+                
+                label_img = tk.Label(ventana_reporte, image=img)
+                label_img.image = img 
+                label_img.pack(expand=True)
         else:
             messagebox.showinfo(
                 "Información",

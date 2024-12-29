@@ -226,8 +226,8 @@ class ArbolAVL:
             reportes_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'reportes')
             os.makedirs(reportes_dir, exist_ok=True)
             
-            dot_path = os.path.join(reportes_dir, "reporte_arbol.dot")
-            png_path = os.path.join(reportes_dir, "reporte_arbol.png")
+            dot_path = os.path.join(reportes_dir, "reporte_arbolAVL.dot")
+            png_path = os.path.join(reportes_dir, "reporte_arbolAVL.png")
             
             with open(dot_path, "w", encoding="utf-8") as file:
                 file.writelines(graphviz_lines)
@@ -258,10 +258,6 @@ class ArbolAVL:
             
             if resultado.returncode == 0:
                 print(f"Reporte generado exitosamente en: {png_path}")
-                if os.name == 'nt':
-                    os.startfile(png_path)
-                elif os.name == 'posix':
-                    subprocess.run(["xdg-open", png_path])
             else:
                 print(f"Error al generar el PNG: {resultado.stderr}")
                 

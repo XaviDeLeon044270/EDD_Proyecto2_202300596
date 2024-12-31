@@ -6,20 +6,12 @@ class Vehiculo:
         self.marca = marca
         self.modelo = modelo
         self.precio = precio
-
-    def __str__(self):
-        return f'Placa: {self.placa}'
     
 class NodoB:
     def __init__(self, hoja = False):
         self.hoja = hoja
         self.pagina = []
         self.hijos = []
-
-    def __str__(self):
-        pagina_str = ', '.join(str(vehiculo) for vehiculo in self.pagina)
-        hijos_str = ', '.join(str(hijo) for hijo in self.hijos)
-        return f"Hoja: {self.hoja} - Página: [{pagina_str}] - Hijos: [{hijos_str}]"
         
 class ArbolB:
     def __init__(self, orden):
@@ -75,12 +67,12 @@ class ArbolB:
     def eliminarNodo(self, nodo, placa, eliminado):
         if nodo is None:
             return None, False
-
+    
         i = 0
-        while i < len(nodo.pagina) and int(placa) > int(nodo.pagina[i].placa):
+        while i < len(nodo.pagina) and placa > nodo.pagina[i].placa:
             i += 1
-
-        if i < len(nodo.pagina) and int(placa) == int(nodo.pagina[i].placa):
+    
+        if i < len(nodo.pagina) and placa == nodo.pagina[i].placa:
             if nodo.hoja:
                 nodo.pagina.pop(i)
                 return nodo, True
@@ -122,20 +114,19 @@ class ArbolB:
 
 
     def buscarNodo(self, nodo, placa):
-        
         if nodo is None:
             return None
-        
+    
         i = 0
-        while i < len(nodo.pagina) and int(placa) > int(nodo.pagina[i].placa):
+        while i < len(nodo.pagina) and placa > nodo.pagina[i].placa:
             i += 1
-        
-        if i < len(nodo.pagina) and int(placa) == int(nodo.pagina[i].placa):
+    
+        if i < len(nodo.pagina) and placa == nodo.pagina[i].placa:
             return nodo.pagina[i]
-        
+    
         if nodo.hoja:
             return None
-        
+    
         return self.buscarNodo(nodo.hijos[i], placa)
 
     def buscarVehiculo(self, placa):

@@ -1,3 +1,20 @@
-Oviedo/Bilbao/304%
-Madrid/Barcelona/620%
-Sevilla/Valencia/480%
+Guatemala/Mixco/120%
+Guatemala/Villa Nueva/300%
+Guatemala/Escuintla/800%
+Villa Nueva/Mixco/180%
+Escuintla/Mixco/920%
+Guatemala/Antigua/90%
+Antigua/Chimaltenango/60%
+Chimaltenango/Quetzaltenango/240%
+Quetzaltenango/San Marcos/120%
+San Marcos/Guatemala/180%
+Mixco/Sololá/150%
+Sololá/Totonicapán/110%
+Totonicapán/Quetzaltenango/130%
+Mazatenango/Suchitepéquez/140%
+San Marcos/Mazatenango/70%
+Mazatenango/Jutiapa/200%
+Jutiapa/Jalapa/160%
+Jalapa/Zacapa/180%
+Zacapa/Antigua/90%
+Villa Nueva/Izabal/210%

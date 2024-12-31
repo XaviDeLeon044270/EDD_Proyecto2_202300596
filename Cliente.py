@@ -155,9 +155,6 @@ class ArbolAVL:
         nodo.derecha = self.rotacionSimpleIzquierda(nodo.derecha)
         return self.rotacionSimpleDerecha(nodo)
     
-    def devolverNodo(self, nodo):
-        return nodo.cliente.__str__()
-    
     def buscarNodo(self, raiz, dpi):
         if raiz is None:
             return None

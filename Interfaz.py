@@ -3,7 +3,7 @@ from tkinter import ttk, messagebox, filedialog
 from PIL import Image, ImageTk
 from Cliente import Cliente, ArbolAVL
 from Vehiculo import Vehiculo, ArbolB
-from Ruta import Ruta
+from Ruta import Ruta, ListaAdyacencia
 
 import os
 
@@ -12,6 +12,7 @@ class Interfaz:
     def __init__(self):
         self.arbolAVL = ArbolAVL()
         self.arbolB = ArbolB(5)
+        self.listaAdyacencia = ListaAdyacencia()
         self.root = tk.Tk()
         self.root.title("Llega Rapidito - Sistema de Gestión")
         self.root.geometry("900x700")
@@ -138,8 +139,14 @@ class Interfaz:
     def on_leave(self, frame):
         frame.configure(relief="raised", bd=1)
     
-    #submenus
     def mostrar_submenu(self, categoria):
+        if categoria == "Viajes":
+            messagebox.showinfo(
+                "Información",
+                f"Función {categoria} (en desarrollo)"
+            )
+            return
+        
         submenu = tk.Toplevel(self.root)
         submenu.title(f"Gestión de {categoria}")
         submenu.geometry("450x600")
@@ -164,7 +171,9 @@ class Interfaz:
             ("Mostrar Información", "📋"),
             ("Mostrar Estructura de Datos", "📊")
         ]
-
+        
+        if categoria == "Rutas":
+            opciones = [opcion for opcion in opciones if opcion[0] not in ["Modificar", "Eliminar", "Mostrar Información"]]
         if categoria != "Viajes":
             opciones.append(("Carga masiva", "📤"))
         
@@ -199,8 +208,6 @@ class Interfaz:
             icon_label.bind('<Button-1>', lambda e, t=texto: self.ejecutar_accion(categoria, t))
             text_label.bind('<Button-1>', lambda e, t=texto: self.ejecutar_accion(categoria, t))
     
-# FUNCIONES ESENCIALES
-
     def ejecutar_accion(self, categoria, accion):
         if accion == "Modificar" or accion == "Eliminar" or accion == "Mostrar Información":
             self.solicitar_llave(categoria, accion)
@@ -210,6 +217,9 @@ class Interfaz:
             
             elif categoria == "Vehículos":
                 self.agregar_vehiculo()
+
+            elif categoria == "Rutas":
+                self.agregar_ruta()
 
         elif accion == "Carga masiva":
             self.carga_masiva(categoria)
@@ -280,6 +290,40 @@ class Interfaz:
                 label_img = tk.Label(ventana_reporte, image=img)
                 label_img.image = img 
                 label_img.pack(expand=True)
+
+            elif categoria == "Rutas":
+                self.listaAdyacencia.generar_reporte()
+
+                ventana_reporte = tk.Toplevel(self.root)
+                ventana_reporte.title("Reporte de Grafo")
+                ventana_reporte.configure(bg="#e8eaf6")
+                
+                ventana_reporte.state('zoomed')
+                
+                image_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'reportes', 'reporte_grafo.png')
+                img = Image.open(image_path)
+                
+                ventana_reporte.update_idletasks()
+                window_width = ventana_reporte.winfo_width()
+                window_height = ventana_reporte.winfo_height()
+                
+                img_width, img_height = img.size
+                aspect_ratio = img_width / img_height
+                
+                if window_width / window_height > aspect_ratio:
+                    new_height = window_height
+                    new_width = int(new_height * aspect_ratio)
+                else:
+                    new_width = window_width
+                    new_height = int(new_width / aspect_ratio)
+                
+                img = img.resize((new_width, new_height), Image.LANCZOS)
+                img = ImageTk.PhotoImage(img)
+                
+                label_img = tk.Label(ventana_reporte, image=img)
+                label_img.image = img 
+                label_img.pack(expand=True)
+
         else:
             messagebox.showinfo(
                 "Información",
@@ -508,6 +552,106 @@ class Interfaz:
         else:
             messagebox.showerror("Error", "Por favor complete todos los campos")
             
+    def agregar_ruta(self):
+        ventana_ruta = tk.Toplevel(self.root)
+        ventana_ruta.title("Agregar Ruta")
+        ventana_ruta.geometry("500x500")
+        ventana_ruta.configure(bg="#e8eaf6")
+        
+        tk.Label(
+            ventana_ruta,
+            text="Agregar Ruta",
+            font=("Helvetica", 16, "bold"),
+            bg="#1a237e",
+            fg="white",
+            pady=10
+        ).pack(fill="x")
+        
+        frame = tk.Frame(ventana_ruta, bg="#e8eaf6")
+        frame.pack(expand=True, fill="both", padx=30, pady=20)
+        
+        tk.Label(
+            frame,
+            text="Ingrese los datos de la ruta:",
+            font=("Helvetica", 12),
+            bg="#e8eaf6"
+        ).pack(pady=10)
+        
+        def crear_campo(parent, label_text, tipo="texto"):
+            container = tk.Frame(parent, bg="#e8eaf6")
+            container.pack(fill="x", pady=5)
+            
+            label = tk.Label(
+                container,
+                text=label_text,
+                font=("Helvetica", 12),
+                bg="#e8eaf6",
+                width=10,
+                anchor="e"
+            )
+            label.pack(side="left", padx=5)
+            
+            if tipo == "texto":
+                entry = tk.Entry(container, font=("Helvetica", 12), relief="solid", bd=1, width=30)
+            elif tipo == "numerico":
+                entry = tk.Entry(container, font=("Helvetica", 12), relief="solid", bd=1, width=30)
+                entry.config(validate="key", validatecommand=(parent.register(lambda val: val.isdigit()), '%P'))
+            
+            entry.pack(side="left", padx=5)
+            return entry
+        
+        origen_entry = crear_campo(frame, "Origen:", "texto")
+        destino_entry = crear_campo(frame, "Destino:", "texto")
+        tiempo_entry = crear_campo(frame, "Tiempo:", "numerico")
+        
+        def enviar_formulario():
+            self.procesar_ruta(
+                origen_entry.get(),
+                destino_entry.get(),
+                tiempo_entry.get(),
+                ventana_ruta
+            )
+        
+        btn_container = tk.Frame(frame, bg="#e8eaf6")
+        btn_container.pack(pady=20)
+        
+        btn_frame = tk.Frame(
+            btn_container,
+            bg="#303f9f",
+            relief="raised",
+            bd=1,
+            cursor="hand2"
+        )
+        btn_frame.pack()
+
+        btn_label = tk.Label(
+            btn_frame,
+            text="Agregar Ruta",
+            font=("Helvetica", 12),
+            bg="#303f9f",
+            fg="white",
+            padx=20,
+            pady=8,
+            cursor="hand2"
+        )
+        btn_label.pack()
+
+        btn_frame.bind('<Button-1>', lambda e: enviar_formulario())
+        btn_label.bind('<Button-1>', lambda e: enviar_formulario())
+        btn_frame.bind('<Enter>', lambda e: self.on_enter(btn_frame))
+        btn_frame.bind('<Leave>', lambda e: self.on_leave(btn_frame))
+
+    def procesar_ruta(self, origen, destino, tiempo, ventana):
+        if origen.strip() and destino.strip() and tiempo.strip():
+            nueva_ruta = Ruta(origen, destino, tiempo)
+            self.listaAdyacencia.insertarVertice(nueva_ruta)
+            messagebox.showinfo(
+                "Información",
+                f"Ruta agregada:\nOrigen: {origen}\nDestino: {destino}\nTiempo: {tiempo}"
+            )
+            ventana.destroy()
+        else:
+            messagebox.showerror("Error", "Por favor complete todos los campos")
 
     def solicitar_llave(self, categoria, accion):
         ventana_llave = tk.Toplevel(self.root)
@@ -1019,10 +1163,7 @@ class Interfaz:
                             continue
 
                         placa, marca, modelo, precio = datos
-                        if placa == "HIJ678":
-                            print("hola")
                         nuevo_vehiculo = Vehiculo(placa.strip(), marca.strip(), modelo.strip(), precio.strip())
-                        #print (f"Vehículo: {nuevo_vehiculo.__str__()} agregado")
                         self.arbolB.insertarVehiculo(nuevo_vehiculo)
                         
 
@@ -1040,9 +1181,7 @@ class Interfaz:
 
                         origen, destino, tiempo = datos
                         nueva_ruta = Ruta(origen.strip(), destino.strip(), tiempo.strip())
-                        print (f"Ruta: {nueva_ruta.__str__()} agregada")
-                        # nuevo_nodo = NodoGrafo(nuevo_viaje)
-                        # self.grafo.insertarNodo(nuevo_nodo)
+                        self.listaAdyacencia.insertarVertice(nueva_ruta)
 
             messagebox.showinfo("Éxito", f"Carga masiva de {categoria} completada")
         except Exception as e:
